@@ -4,8 +4,9 @@
  * @flow
  */
 
-import React, { Component } from 'react-native';
+import React, { Component } from 'react';
 import feathers from 'feathers-client';
+// import io from 'socket.io-client';
 
 
 import {
@@ -15,23 +16,24 @@ import {
   View
 } from 'react-native';
 
+if (window.navigator && Object.keys(window.navigator).length == 0) {
+  window = Object.assign(window, {navigator: {userAgent: 'ReactNative'}});
+}
+
+var io = require('socket.io-client/socket.io');
+
+const socket = io('http://localhost:3030', { transports: ['websocket'] });
+
 const app = feathers()
   .configure(feathers.hooks())
-  .configure(feathers.rest('http://localhost:3030').fetch(fetch));
+  // .configure(feathers.rest('http://localhost:3030').fetch(fetch));
+  .configure(feathers.socketio(socket));
 
 const messagesService = app.service('/messages');
 
 messagesService.create({})
   .catch(error => {
-    // alert(error.message)
-
-    // Error: Cannot read property 'on' of undefined(…)
-    console.log(error)
-  })
-
-messagesService.find({})
-  .then(results => {
-    console.log(results)
+    console.error(error)
   })
 
 class test extends Component {
